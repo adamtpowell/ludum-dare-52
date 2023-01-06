@@ -4,4 +4,7 @@
         "${3rd}/love2d/library"
     ],
     "Lua.workspace.checkThirdParty": false,
+    "Lua.diagnostics.globals": [
+        "lume"
+    ],
 }
