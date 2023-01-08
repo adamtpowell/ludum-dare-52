@@ -34,8 +34,8 @@ local function float_index(array, float)
     return array[index]
 end
 
-local cap_colors = {config.palette.black, config.palette.violet, config.palette.purple, config.palette.red, config.palette.yellow, config.palette.lime}
-local cap_color_names = {"black", "violet", "purple", "red","yellow","lime"}
+local cap_colors = {config.palette.black, config.palette.violet, config.palette.red, config.palette.yellow, config.palette.lime}
+local cap_color_names = {"black", "violet", "red","yellow","lime"}
 
 local fill_types = { "spot", "speckle", "stripes", "circled" }
 local fill_type_names = { "spotted", "speckled", "striped", "ringed" }

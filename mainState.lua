@@ -208,6 +208,7 @@ return {
 
     end,
     enter = function(state)
+        love.audio.play(Assets.ld52music)
         state.discovery = false
         state.pool = nata.new()
         state.species = {}
@@ -345,6 +346,10 @@ return {
     end,
     update = function(state, dt)
         if state.progressbar:getLife() < 0 then
+            if not state.gameover then
+                love.audio.play(Assets.sound.gong)
+                love.audio.stop(Assets.ld52music)
+            end
             state.gameover = true
             state.controls = false
             state.level_complete = true
@@ -483,7 +488,8 @@ return {
                 state.page,
                 num_pages,
                 state.specimens,
-                new_sway_state
+                new_sway_state,
+                state.title
             )
             page.draw_page(
                 state.last_page_pos[1],
@@ -491,7 +497,8 @@ return {
                 state.last_page,
                 num_pages,
                 state.specimens,
-                new_sway_state
+                new_sway_state,
+                state.title
             )
         else
             page.draw_page(
@@ -500,7 +507,8 @@ return {
                 state.last_page,
                 num_pages,
                 state.specimens,
-                new_sway_state
+                new_sway_state,
+                state.title
             )
             page.draw_page(
                 config.layout.book_x,
@@ -508,7 +516,8 @@ return {
                 state.page,
                 num_pages,
                 state.specimens,
-                new_sway_state
+                new_sway_state,
+                state.title
             )
         end
 
@@ -517,7 +526,7 @@ return {
             love.graphics.draw(Assets.enter_box, 3, 150)
             love.graphics.push("all")
                 love.graphics.setColor(U.pallete_to_love(config.palette.black))
-                love.graphics.print("Enter to continue", 8, 149)
+                love.graphics.print("Enter / Start to continue", 8, 149)
             love.graphics.pop()
         end
 
@@ -540,11 +549,11 @@ return {
                 love.graphics.setColor(0, 0, 0, 1)
                 love.graphics.setFont(MainFont)
                 love.graphics.printf([[
-Identify which mushrooms are deadly using your memory and your guidebook.
+Identify the deadly mushrooms using your memory and guidebook.
 
-Z to eat the mushroom. X to reject it. If you make a mistake, you lose time.
+Z/A to eat the mushroom. X/B to reject it. If you make a mistake, you lose time.
 
-Arrow keys to flip through the guidebook.
+Arrow keys/DPad to flip through the book, once you discover more species.
 ]], 8, 8, 130, "left")
 
                 love.graphics.print("Enter to continue", 8, 149)
@@ -573,7 +582,7 @@ Game over.
     score = state.mushrooms_gathered + #state.specimens * 8 - state.people_poisoned * 2,
 
 }), 8, 8, 130, "left")
-                love.graphics.print("Enter to continue", 8, 149)
+                love.graphics.print("Enter / Start to continue", 8, 149)
             love.graphics.pop()
 
         end
@@ -584,7 +593,7 @@ Game over.
             love.graphics.draw(Assets.enter_box, 3, 150)
             love.graphics.push("all")
             love.graphics.setColor(U.pallete_to_love(config.palette.black))
-            love.graphics.print("Enter to continue", 8, 149)
+            love.graphics.print("Enter / Start to continue", 8, 149)
             love.graphics.pop()
         end
 

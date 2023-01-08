@@ -7,6 +7,7 @@ return baton.new {
     accept = {'key:z', 'button:a'},
     reject = {'key:x', 'button:b'},
     start = {'key:return', 'button:start'},
+    escape = {'key:escape', 'button:back'},
   },
   joystick = love.joystick.getJoysticks()[1],
 }

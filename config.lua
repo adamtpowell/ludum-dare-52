@@ -4,7 +4,7 @@ return {
     screen = {
         width = 264,
         height = 164,
-        scale = 5,
+        scale = 2,
     },
     palette = {
         tan = { 244, 204, 161 },
@@ -58,15 +58,15 @@ return {
         }
     },
     gameplay ={
-        starting_mushrooms = 5,
-        max_mushrooms = 15,
+        starting_mushrooms = 10,
+        max_mushrooms = 100,
         starting_life = 100,
         life_per_second = 4,
-        life_gain_correct = 10,
-        life_loss_poison = 40,
-        life_loss_safe = 30,
+        life_gain_correct = 6,
+        life_loss_poison = 33,
+        life_loss_safe = 33,
         poison_chance = 0.4,
         message_length = 2,
-        poison_bag = {false, false, true}
+        poison_bag = {false, false, true, true}
     }
 }

@@ -16,6 +16,8 @@ local config = require "config"
 
 local input = require "controller"
 
+ResizeCallbacks = {}
+
 U = require "u"
 
 
@@ -39,7 +41,6 @@ function love.load()
 
     Assets.ld52music:setLooping(true)
 
-    love.audio.play(Assets.ld52music)
 
     Assets.stripes:setWrap("repeat", "repeat")
 end
@@ -47,7 +48,12 @@ end
 function love.update(dt)
     require("libraries.lurker").update()
 
-    Screen:setDimensions(config.screen.width, config.screen.height, config.screen.scale)
+    -- Screen:setDimensions(config.screen.width, config.screen.height, config.screen.scale)
+
+    if input:pressed("escape") then
+        Screen:toggleFullscreen()
+        Call_resize()
+    end
 
     input:update()
 
@@ -62,4 +68,23 @@ end
 ---@diagnostic disable-next-line: duplicate-set-field -- This is to fix a bug cause by lurker's design.
 function love.draw()
     Screen:draw(TerebiDraw)
+end
+
+function Call_resize()
+
+    for i, callback in ipairs(ResizeCallbacks) do
+        callback()
+    end
+end
+
+function love.keypressed(key)
+--   if     key == '+' then
+--     Screen:increaseScale()
+--   elseif key == '-' then
+--     Screen:decreaseScale()
+--   end
+end
+
+function love.resize(w, h)
+    Screen:handleResize()
 end

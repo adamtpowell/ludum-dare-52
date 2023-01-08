@@ -196,7 +196,17 @@ function mushroom.new(x, y, options, species)
     self.x = x
     self.y = y
 
+    table.insert(ResizeCallbacks, function()
+        if not self then return end
+        self:redraw()
+    end)
+
     return self
+end
+
+function mushroom:redraw()
+    self.stalk, self.capx, self.capy = self:basic_stalk()
+    self.head, self.head_angle = self:basic_head()
 end
 
 function mushroom:update()
