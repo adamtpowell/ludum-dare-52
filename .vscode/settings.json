@@ -5,6 +5,15 @@
     ],
     "Lua.workspace.checkThirdParty": false,
     "Lua.diagnostics.globals": [
-        "lume"
+        "lume",
+        "is",
+        "__optional",
+        "__elements",
+        "__optional_elements",
+        "__not_elements",
+        "__not"
+    ],
+    "Lua.diagnostics.disable": [
+        "duplicate-set-field"
     ],
 }

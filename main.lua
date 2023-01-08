@@ -1,69 +1,62 @@
--- Documentation is at https://github.com/oniietzschan/terebi
+if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
+    require("lldebugger").start()
+end
+
+require "libraries.typing"
+Assets = require "libraries.cargo".init("assets")
+lume = require "libraries.lume"
+
 local terebi = require "libraries.terebi"
 
--- Documentation is at https://tesselode.github.io/nata/topics/tutorial.md.html
-local nata = require "libraries.nata"
+local mainState = require "mainState"
 
--- Documentation is at https://github.com/tesselode/baton
-local baton = require "libraries.baton"
-
--- Documentation is at https://github.com/kikito/bump.lua
-local bump = require "libraries.bump"
-
--- Documentation is at https://github.com/karai17/Simple-Tiled-Implementation
-local simpleTiledImplementation = require "libraries.sti"
-
-local assets = require "libraries.cargo".init("assets")
+local machine = require "globalMachine"
 
 local config = require "config"
 
-lume = require "libraries.lume"
+local input = require "controller"
 
--- The global baton instance. Only supports a single controller.
-Input = baton.new {
-  controls = {
-    left = {'key:left', 'key:a', 'axis:leftx-', 'button:dpleft'},
-    right = {'key:right', 'key:d', 'axis:leftx+', 'button:dpright'},
-    up = {'key:up', 'key:w', 'axis:lefty-', 'button:dpup'},
-    down = {'key:down', 'key:s', 'axis:lefty+', 'button:dpdown'},
-    action = {'key:x', 'button:a'},
-  },
-  pairs = {
-    move = {'left', 'right', 'up', 'down'}
-  },
-  joystick = love.joystick.getJoysticks()[1],
-}
+U = require "u"
 
-World = bump.newWorld()
 
 function love.load()
+
+    love.math.setRandomSeed(love.timer.getTime())
+    math.randomseed(love.timer.getTime())
     terebi.initializeLoveDefaults()
 
+    MainFont = love.graphics.newFont("assets/fonts/Silkscreen-Regular.ttf", 8, "none")
+    DisplayFont = love.graphics.newFont("assets/fonts/rainyhearts.ttf", 16, "none")
+
+    Assets.clouds1:setWrap("repeat", "repeat")
+    Assets.clouds2:setWrap("repeat", "repeat")
+
+    Assets.log:setWrap("repeat", "clampzero")
 
     -- Object which stores the logical screen, drawn to the real screen in love.draw().
-    Screen = terebi.newScreen(640, 490, 1)
+    Screen = terebi.newScreen(config.screen.width, config.screen.height, config.screen.scale)
         :setBackgroundColor(0, 0, 0)
 
-    -- The main nata pool.
-    Pool = nata.new{}
+    Assets.ld52music:setLooping(true)
 
-    -- Map = simpleTiledImplementation("assets/levels/Frogs.lua")
+    love.audio.play(Assets.ld52music)
+
+    Assets.stripes:setWrap("repeat", "repeat")
 end
 
 function love.update(dt)
     require("libraries.lurker").update()
 
-    -- Update the entities in the pool.
-    Pool:flush()
-    Pool:emit("update", dt)
+    Screen:setDimensions(config.screen.width, config.screen.height, config.screen.scale)
 
-    -- Update controls
-    Input:update()
+    input:update()
+
+    machine:update(dt)
 end
 
 -- Draw to the virtual Terebi screen. Everything to be scaled should go here.
 function TerebiDraw()
-    Pool:emit("draw")
+    machine:draw()
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field -- This is to fix a bug cause by lurker's design.
