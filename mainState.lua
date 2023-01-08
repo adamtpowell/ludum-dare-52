@@ -86,9 +86,7 @@ return {
         if accepted and poison then
             timer.script(function(wait)
                 love.audio.play(Assets.sound.pick)
-                wait(0.25)
-                love.audio.play(Assets.sound.ate)
-                wait(0.3)
+                wait(0.35)
                 love.audio.play(Assets.sound.gross)
             end)
             state:showMessage("*Dying Noises*")
@@ -111,9 +109,7 @@ return {
         if accepted and not poison then
             timer.script(function(wait)
                 love.audio.play(Assets.sound.pick)
-                wait(0.25)
-                love.audio.play(Assets.sound.ate)
-                wait(0.3)
+                wait(0.35)
                 love.audio.play(Assets.sound.licklips)
             end)
             state.mushrooms_gathered = state.mushrooms_gathered + 1
@@ -126,7 +122,7 @@ return {
 
         if not accepted and not poison then
             love.audio.play(Assets.sound.mushroom_move)
-            state:showMessage("HEY! I was gonna make a soup with that!")
+            state:showMessage("I could've made a soup out of that!")
             state.progressbar:changeLife(-config.gameplay.life_loss_safe)
             state:reject_mushroom(function()
                 state:move_to_next_mushroom()
@@ -157,12 +153,12 @@ return {
             wait(config.animation.discover.before_slide)
             timer.tween(config.animation.slide_time, state.mushroom_x, {75}, "linear")
             wait(config.animation.slide_time)
-            wait(config.animation.discover.after_slide)
-
-
             table.insert(state.specimens, new_species:get_mushroom(0, 0))
             state.goal_page = math.ceil(#state.specimens / 2)
             state.discovery = true
+            wait(config.animation.discover.after_slide)
+
+
         end)
     end,
     move_to_next_mushroom = function(state)
@@ -200,6 +196,8 @@ return {
 
         state.progressbar:reset(state.mushrooms_in_level)
 
+        state.goal_page = nil
+
         timer.script(function (wait)
             timer.tween(config.animation.reject_time, state.mushroom_x, {config.animation.reject_distance}, "linear")
 
@@ -224,6 +222,9 @@ return {
             print("name loop after", state.species[1].name, state.species[2].name)
             its = its + 1
         end
+
+        state.species[1].options.cap_color = (state.species[2].options.cap_color + 0.5) % 1.0
+        state.species[1].options.cap_pattern = (state.species[2].options.cap_pattern + 0.5) % 1.0
 
         state.specimens = {}
         for _, species in ipairs(state.species) do
@@ -260,12 +261,18 @@ return {
 
         state.level_complete = true
 
-        state.instructions = true
+        state.instructions = false
+        state.title = true
         state.gameover = false
 
         state.mushrooms_gathered = 0
 
         state.people_poisoned = 0
+
+        local title_species = species.random(false)
+        title_species.options.stalk_height = 0.5
+
+        state.title_mushroom = title_species:get_mushroom(0,0)
     end,
     startFirstLevel = function(state)
         state.instructions = false
@@ -284,6 +291,7 @@ return {
         end
 
         if state.page ~= state.last_page then
+            love.audio.play(Assets.sound.flip:clone())
             state.can_flip = false
             state.last_page_in_front = true
 
@@ -314,6 +322,7 @@ return {
         end
 
         if state.page ~= state.last_page then
+            love.audio.play(Assets.sound.flip:clone())
             state.can_flip = false
             state.last_page_in_front = true
 
@@ -354,7 +363,7 @@ return {
         end
 
         state.time = state.time + dt
-        if state.controls then
+        if not state.gameover and state.controls then
             if state.mushrooms_left > 0 then
                 if input:pressed("accept") then
                     state:choose_mushroom(true)
@@ -384,6 +393,12 @@ return {
             state:startFirstLevel()
         end
 
+        if state.title and input:pressed("start") then
+            love.audio.play(Assets.sound.start)
+            state.title = false
+            state.instructions = true
+        end
+
         if state.instructions and input:pressed('accept') then
             return "main" -- DEBUG: Restart
         end
@@ -392,9 +407,14 @@ return {
             if state.can_flip then
                 state:turnPageRight()
             end
-            if state.page ==state.goal_page then
-                state.goal_page = nil
-            end
+        end
+
+        if state.goal_page and state.page ==state.goal_page then
+            timer.script(function(wait)
+                wait(0.4)
+                love.audio.play(Assets.sound.ding)
+            end)
+            state.goal_page = nil
         end
 
 
@@ -419,20 +439,29 @@ return {
             love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
         love.graphics.pop()
 
-        local cloud1quad = love.graphics.newQuad(state.cloudx, 0, Assets.clouds1:getWidth(), Assets.clouds1:getHeight(), Assets.clouds1:getWidth(), Assets.clouds1:getHeight())
-        local cloud2quad = love.graphics.newQuad(state.cloudx * 0.5, 0, Assets.clouds1:getWidth(), Assets.clouds1:getHeight(), Assets.clouds1:getWidth(), Assets.clouds1:getHeight())
+        local cloud1quad = love.graphics.newQuad(state.cloudx * 3, 0, Assets.clouds1:getWidth(), Assets.clouds1:getHeight(), Assets.clouds1:getWidth(), Assets.clouds1:getHeight())
+        local cloud2quad = love.graphics.newQuad(state.cloudx, 0, Assets.clouds1:getWidth(), Assets.clouds1:getHeight(), Assets.clouds1:getWidth(), Assets.clouds1:getHeight())
 
         love.graphics.draw(Assets.clouds1, cloud1quad, 0, 0)
         love.graphics.draw(Assets.clouds2, cloud2quad, 0, 0)
 
-        local log_quad = love.graphics.newQuad(-state.logx[1], 0, Assets.log:getWidth(), Assets.log:getHeight(), Assets.log:getWidth(), Assets.log:getHeight())
-        love.graphics.draw(Assets.log, log_quad, 0, 125)
+        local log_quad = love.graphics.newQuad(-state.logx[1], 0, love.graphics:getWidth(), Assets.log:getHeight(), Assets.log:getWidth(), Assets.log:getHeight())
+        love.graphics.draw(Assets.log, log_quad, 0, 126)
 
         love.graphics.push("all")
             love.graphics.translate(state.mushroom_x[1], state.mushroom_y[1])
             love.graphics.rotate(math.sin(state.time / config.animation.sway_rate) * config.animation.sway_amount)
             love.graphics.translate(-state.mushroom_x[1], -state.mushroom_y[1])
-            if state.mushroom then state.mushroom.mushroom:draw(state.mushroom_x[1], state.mushroom_y[1]) end
+            if state.mushroom and not state.title then state.mushroom.mushroom:draw(state.mushroom_x[1], state.mushroom_y[1]) end
+        love.graphics.pop()
+
+        love.graphics.push("all")
+            local x= 80
+            local y = 140
+            love.graphics.translate(x, y)
+            love.graphics.rotate(math.sin(state.time / config.animation.sway_rate) * config.animation.sway_amount)
+            love.graphics.translate(-x, -y)
+            if state.title then state.title_mushroom:draw(x, y) end
         love.graphics.pop()
 
         local num_pages = math.ceil(#state.specimens / 2)
@@ -501,7 +530,7 @@ return {
             love.graphics.pop()
         end
 
-        if not state.instructions and not state.gameover and not state.discovery then
+        if not state.title and not state.instructions and not state.gameover and not state.discovery then
             state.progressbar:draw()
         end
         if state.instructions then
@@ -530,19 +559,18 @@ Arrow keys to flip through the guidebook.
                 love.graphics.setColor(0, 0, 0, 1)
                 love.graphics.setFont(MainFont)
                 love.graphics.printf(stringx.apply_template([[
-I guess you're not a master forager like you said.
+Looks like your foraging days are over!
 
-You gathered $mushrooms_gathered good mushrooms.
+You gathered $mushrooms_gathered good mushrooms, discovered $species_discovered species, and poisoned $people_poisoned people.
 
-You discovered $species_discovered species.
-
-You poisoned $people_poisoned people.
+You got $score points!
 
 Game over.
 ]], {
     mushrooms_gathered = state.mushrooms_gathered,
     species_discovered = #state.specimens,
     people_poisoned = state.people_poisoned,
+    score = state.mushrooms_gathered + #state.specimens * 8 - state.people_poisoned * 2,
 
 }), 8, 8, 130, "left")
                 love.graphics.print("Enter to continue", 8, 149)
@@ -550,6 +578,15 @@ Game over.
 
         end
 
+
+        if state.title then
+            love.graphics.draw(Assets.title, 33, 9)
+            love.graphics.draw(Assets.enter_box, 3, 150)
+            love.graphics.push("all")
+            love.graphics.setColor(U.pallete_to_love(config.palette.black))
+            love.graphics.print("Enter to continue", 8, 149)
+            love.graphics.pop()
+        end
 
 
         state.pool:emit("draw")

@@ -34,11 +34,11 @@ local function float_index(array, float)
     return array[index]
 end
 
-local cap_colors = {--[[config.palette.black, config.palette.gray,]] config.palette.violet, config.palette.pink, config.palette.purple, config.palette.red, config.palette.orange, config.palette.yellow, config.palette.lime, config.palette.green}
-local cap_color_names = {--[["black", "gray", ]]"violet", "pink", "purple", "red","orange","yellow","lime","green"}
+local cap_colors = {config.palette.black, config.palette.violet, config.palette.purple, config.palette.red, config.palette.yellow, config.palette.lime}
+local cap_color_names = {"black", "violet", "purple", "red","yellow","lime"}
 
-local fill_types = { "spot", "speckle", "glossy", "stripes" }
-local fill_type_names = { "spotted", "speckled", "glossy", "striped" }
+local fill_types = { "spot", "speckle", "stripes", "circled" }
+local fill_type_names = { "spotted", "speckled", "striped", "ringed" }
 
 local function get_possible_first(options, poison)
     local pos = {"spore", "forest", "swamp", "pond", "common", "rare", "meadow"}
@@ -201,6 +201,7 @@ function species.random(poison)
             cap_density = math.random(),
             cap_pattern = math.random(),
             stalk_sameness = math.random(),
+            movemultiplier = math.random(),
     }, poison)
 end
 
@@ -213,10 +214,10 @@ end
 function species:get_mushroom(x, y)
 
     local width_base = 6 + 6 * self.options.stalk_width
-    local width_variance = 4 / 2
+    local width_variance =  width_base * 0.1
 
     local height_base = 20 + 65 * self.options.stalk_height
-    local height_variance = height_base * 0.3 / 2
+    local height_variance = height_base * 0.1
 
     local angle_max = 0 + 5.5 * self.options.cap_angle
 
@@ -257,6 +258,7 @@ function species:get_mushroom(x, y)
         headmaxheight = head_height_base + head_height_variance,
         movepercent = 100 - movepercent,
         growpercent = 100 - growpercent,
+        movemultiplier = self.options.movemultiplier * 0.6
     }, self)
 end
 

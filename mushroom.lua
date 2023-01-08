@@ -42,18 +42,20 @@ local function get_stalk_parts(background_color, streak_color)
     return stalk_parts
 end
 
-local function get_stalk(background_color, streak_color, minwidth, maxwidth, minheight, maxheight, movepercent, growpercent)
+local function get_stalk(background_color, streak_color, minwidth, maxwidth, minheight, maxheight, movepercent, growpercent, movemultiplier)
     local stalk_parts = get_stalk_parts(background_color, streak_color)
 
     local stalk = love.graphics.newCanvas(64, 100)
     love.graphics.setCanvas{stalk}
         local xpos = 0
+        local xdir = 0
         local width = math.random(minwidth, maxwidth)
         local height = math.random(minheight, maxheight)
         for y = 0, height do
             if math.random(100) > movepercent then
-                xpos = xpos + math.random(-1, 1)
+                xdir = math.random(-1, 1)
             end
+            xpos = xpos + xdir * movemultiplier
             if math.random(100) > growpercent then
                 width = width + math.random(-1, 1)
                 if width < minwidth then width = minwidth end
@@ -107,6 +109,14 @@ local function spot_fill(minamount, maxamount, minsize, maxsize)
     end
 end
 
+local function circle_fill(minamount, maxamount, minsize, maxsize)
+    return function(width, height)
+        for i = 0, math.random(minamount, maxamount) do
+            love.graphics.circle("line", math.random(0, width), math.random(0, height), math.random(minsize, maxsize))
+        end
+    end
+end
+
 local function stripe_fill(minamount, maxamount)
     return function(width, height)
         local stripe_height = Assets.stripes:getHeight()
@@ -149,7 +159,7 @@ local function get_head(minwidth, maxwidth, minheight, maxheight, background_col
 end
 
 function mushroom:basic_stalk()
-    return get_stalk(self.options.stalk_color, self.options.streak_color, self.options.minwidth, self.options.maxwidth, self.options.minheight, self.options.maxheight, self.options.movepercent, self.options.growpercent)
+    return get_stalk(self.options.stalk_color, self.options.streak_color, self.options.minwidth, self.options.maxwidth, self.options.minheight, self.options.maxheight, self.options.movepercent, self.options.growpercent, self.options.movemultiplier)
 end
 
 function mushroom:basic_head()
@@ -158,6 +168,10 @@ function mushroom:basic_head()
         local minamount = 10 + self.options.fill_amount * 10
         local maxamount = minamount + 10
         fill = spot_fill(minamount, maxamount, 4, 6)
+    elseif self.options.fill_type == "circled" then
+        local minamount = 10 + self.options.fill_amount * 10
+        local maxamount = minamount + 10
+        fill = circle_fill(minamount, maxamount, 4, 6)
     elseif self.options.fill_type == "speckle" then
         local minamount = 20 + self.options.fill_amount * 20
         local maxamount = minamount + 20
@@ -223,10 +237,16 @@ function mushroom:draw(x, y)
     draw_shadow(draw_stalk, 1, 1)
     draw_shadow(draw_stalk, 1, 0)
     draw_stalk(self.stalk, self.head, self.capx, self.capy, self.head_angle)
+
     draw_shadow(draw_head, 1, 1)
     draw_shadow(draw_head, 1, 0)
     draw_head(self.stalk, self.head, self.capx, self.capy, self.head_angle)
 
+    love.graphics.pop()
+    love.graphics.push("all")
+        love.graphics.translate(x, y)
+        local scale = self.options.minwidth / (Assets.root:getWidth() * 0.7)
+        love.graphics.draw(Assets.root,0,0,0, scale, 1, Assets.root:getWidth() / 2, Assets.root:getHeight() / 2)
     love.graphics.pop()
 end
 
