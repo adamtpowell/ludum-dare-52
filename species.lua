@@ -210,6 +210,17 @@ function species:set_options(options)
     print(self.options.cap_color)
 end
 
+function species.distance(species1, species2)
+    return math.abs(math.sqrt(
+            math.pow(species1.options.cap_color - species2.options.cap_color, 2) +
+            math.pow(species1.options.stalk_height - species2.options.stalk_height, 2) +
+            math.pow(species1.options.cap_width - species2.options.cap_width, 2) +
+            math.pow(species1.options.cap_height - species2.options.cap_height, 2) +
+            math.pow(species1.options.cap_density - species2.options.cap_density, 2) +
+            math.pow(species1.options.cap_pattern - species2.options.cap_pattern, 2)
+    ))
+end
+
 
 function species:get_mushroom(x, y)
 

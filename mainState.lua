@@ -63,7 +63,27 @@ return {
             state.poisonbag = tablex.shallow_copy(config.gameplay.poison_bag)
         end
         local poison = tablex.take_random(state.poisonbag)
-        local new_species = species.random(poison)
+
+        local new_species = nil
+        local its = 0
+        local maxits = 250 -- Maximum number of tries
+        local species_bad = false
+        while new_species == nil and its < maxits do
+            new_species = species.random(poison)
+            for i, cur_species in ipairs(state.species) do
+                local distance = species.distance(new_species, cur_species)
+                print("Distance: " .. distance)
+                if species.distance(new_species, cur_species) < config.gameplay.min_distance then
+                    species_bad = true
+                end
+            end
+            if species_bad and its < maxits - 1 then
+                print("Species rejected " .. its)
+                new_species = nil
+            end
+
+            its = its + 1
+        end
 
         local its = 0
         while its < 100 and has_name(state.species, new_species.name) do

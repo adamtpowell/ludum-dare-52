@@ -67,6 +67,7 @@ return {
         life_loss_safe = 33,
         poison_chance = 0.4,
         message_length = 2,
-        poison_bag = {false, false, true, true}
+        poison_bag = {false, false, true, true},
+        min_distance = 0.5
     }
 }
